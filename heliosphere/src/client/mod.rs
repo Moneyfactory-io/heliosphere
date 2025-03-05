@@ -11,7 +11,7 @@ use serde::{de::DeserializeOwned, Serialize};
 
 use self::types::{
     AccountBalanceResponse, BroadcastTxResponse, ChainParametersResponse, QueryContractResponse,
-    TransactionInfo, TriggerContractResponse,
+    SolidityTransactionInfo, TriggerContractResponse,
 };
 
 mod types;
@@ -166,11 +166,11 @@ impl RpcClient {
         .await
     }
 
-    /// Get transaction info
-    pub async fn get_tx_info_by_id(
+    /// Get transaction from solidity wallet
+    pub async fn get_tx_by_id(
         &self,
         txid: TransactionId,
-    ) -> Result<Option<TransactionInfo>, crate::Error> {
+    ) -> Result<Option<SolidityTransactionInfo>, crate::Error> {
         let res: serde_json::Value = self
             .api_post(
                 "/walletsolidity/gettransactionbyid",
@@ -187,10 +187,10 @@ impl RpcClient {
     pub async fn await_confirmation(
         &self,
         txid: TransactionId,
-    ) -> Result<TransactionInfo, crate::Error> {
+    ) -> Result<SolidityTransactionInfo, crate::Error> {
         loop {
-            let info = self.get_tx_info_by_id(txid).await?;
-            match info {
+            let tx = self.get_tx_by_id(txid).await?;
+            match tx {
                 Some(x) if !x.ret.is_empty() && x.ret[0].contract_ret == "SUCCESS" => return Ok(x),
                 Some(x) => {
                     return Err(crate::Error::TxFailed(

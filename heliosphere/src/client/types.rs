@@ -93,9 +93,9 @@ pub struct TransactionRet {
     pub contract_ret: String,
 }
 
-/// Transaction info
+/// Transaction from solidity wallet
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TransactionInfo {
+pub struct SolidityTransactionInfo {
     #[serde(flatten)]
     pub transaction: Transaction,
     pub ret: Vec<TransactionRet>,
@@ -121,4 +121,58 @@ pub(crate) struct ChainParametersResponse {
 pub(crate) struct AccountBalanceResponse {
     #[serde(default)]
     pub balance: Option<u64>,
+}
+
+/// Transaction execution result
+pub type TransactionResult = String;
+
+/// Transaction receipt, including transaction execution result and transaction fee details
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct ResourceReceipt {
+    /// The amount of energy consumed in the caller's account
+    #[serde(default)]
+    pub energy_usage: Option<u64>,
+    /// The amount of TRX burned to pay for energy
+    #[serde(default)]
+    pub energy_fee: Option<u64>,
+    /// The amount of energy consumed in the contract deployer's account
+    #[serde(default)]
+    pub origin_energy_usage: Option<u64>,
+    /// The total amount of energy consumed by the transaction
+    #[serde(default)]
+    pub energy_usage_total: Option<u64>,
+    /// The amount of bandwidth consumed
+    #[serde(default)]
+    pub net_usage: Option<u64>,
+    /// The amount of TRX burned to pay for the bandwidth
+    pub net_fee: u64,
+    #[serde(default)]
+    pub result: Option<TransactionResult>, // TODO: Fix type
+    /// The amount of extra energy that needs to be paid for calling a few popular contracts
+    #[serde(default)]
+    pub energy_penalty_total: Option<u64>,
+}
+
+/// Transaction info
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct TransactionInfo {
+    /// Transaction ID
+    pub id: String,
+    /// The total number of TRX burned in this transaction,
+    /// including TRX burned for bandwidth/energy, memo fee,
+    /// account activation fee, multi-signature fee and other fees
+    pub fee: u64,
+    /// The block number
+    #[serde(rename = "blockNumber")]
+    pub block_number: u64,
+    /// The block timestamp, the unit is millisecond
+    #[serde(rename = "blockTimeStamp")]
+    pub block_timestamp: u64,
+    /// Transaction Execution Results
+    #[serde(rename = "contractResult")]
+    pub contract_result: Vec<String>,
+    /// Contract address
+    #[serde(default)]
+    pub contract_address: Option<String>,
+    pub receipt: ResourceReceipt,
 }
