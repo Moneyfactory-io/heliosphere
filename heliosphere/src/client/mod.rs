@@ -9,13 +9,9 @@ use heliosphere_signer::signer::Signer;
 use reqwest::{Client, IntoUrl, Url};
 use serde::{de::DeserializeOwned, Serialize};
 
-use self::types::{
-    AccountBalanceResponse, BroadcastTxResponse, ChainParametersResponse, QueryContractResponse,
-    SolidityTransactionInfo, TriggerContractResponse,
-};
-
-mod types;
-pub use types::{AccountResources, ResourceType};
+/// Reponse types
+pub mod types;
+pub use types::*;
 
 /// Method call params
 pub struct MethodCall<'a> {
@@ -127,10 +123,10 @@ impl RpcClient {
         match resp.code {
             Some(err) => Err(crate::Error::TxConstructionFailed(
                 err,
-                hex::decode(&resp.message)
+                hex::decode(resp.message.clone().unwrap())
                     .ok()
                     .and_then(|x| String::from_utf8(x).ok())
-                    .unwrap_or(resp.message),
+                    .unwrap_or(resp.message.unwrap_or("Unknown error".to_string())),
             )),
             None => Ok(resp.txid),
         }
@@ -167,7 +163,7 @@ impl RpcClient {
     }
 
     /// Get transaction from solidity wallet
-    pub async fn get_tx_by_id(
+    pub async fn solidity_get_tx_by_id(
         &self,
         txid: TransactionId,
     ) -> Result<Option<SolidityTransactionInfo>, crate::Error> {
@@ -189,7 +185,7 @@ impl RpcClient {
         txid: TransactionId,
     ) -> Result<SolidityTransactionInfo, crate::Error> {
         loop {
-            let tx = self.get_tx_by_id(txid).await?;
+            let tx = self.solidity_get_tx_by_id(txid).await?;
             match tx {
                 Some(x) if !x.ret.is_empty() && x.ret[0].contract_ret == "SUCCESS" => return Ok(x),
                 Some(x) => {
@@ -298,14 +294,14 @@ impl RpcClient {
                 }),
             )
             .await?;
-        if resp.constant_result.is_empty() && resp.code.is_none() {
+        if resp.constant_result.is_empty() {
             return Err(crate::Error::ContractNotFound);
         }
 
-        if let Some(code) = resp.code.as_ref() {
+        if let Some(code) = resp.result.code.as_ref() {
             return Err(crate::Error::ContractQueryFailed(
                 code.to_owned(),
-                resp.message,
+                resp.result.message.unwrap(),
             ));
         }
         Ok(resp)
@@ -418,5 +414,17 @@ impl RpcClient {
             .into_iter()
             .filter_map(|p| Some((p.key, p.value?)))
             .collect())
+    }
+
+    /// Query the transaction fee, block height by transaction id
+    pub async fn get_tx_info_by_id(
+        &self,
+        tx_id: TransactionId,
+    ) -> Result<TransactionInfo, crate::Error> {
+        self.api_post(
+            "/wallet/gettransactioninfobyid",
+            &serde_json::json!({ "value": tx_id }),
+        )
+        .await
     }
 }

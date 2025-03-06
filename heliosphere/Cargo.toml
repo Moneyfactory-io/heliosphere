@@ -22,5 +22,6 @@ tokio = { version = "1", default-features = false, features = ["time"] }
 
 [dev-dependencies]
 ethabi = "18.0.0"
+futures = "0.3.31"
 rand = "0.8.5"
 tokio = { version = "1.24.1", features = ["rt-multi-thread", "macros"] }
