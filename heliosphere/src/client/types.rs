@@ -203,10 +203,38 @@ pub struct Log {
     data: String,
 }
 
-/// Internal transaction
-// TODO: Make internal transaction struct
+/// Call value info
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
-pub struct InternalTransaction {}
+pub struct CallValueInfo {
+    /// The amount of TRX/TRC10 tokens transferred
+    #[serde(default, rename = "callValue")]
+    call_value: Option<u64>,
+    /// TRC10 name or id of the transfer; when transferring TRX, this field is empty
+    #[serde(default, rename = "tokenId")]
+    token_id: Option<String>,
+}
+
+/// Internal transaction
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct InternalTransaction {
+    /// The hash value of the internal transaction
+    hash: TransactionId,
+    /// Caller address
+    caller_address: Address,
+    /// The calling contract address or the account address receiving TRX/TRC10 tokens
+    #[serde(rename = "transferTo_address")]
+    transfer_to_address: Address,
+    /// CallValueInfo
+    #[serde(rename = "callValueInfo")]
+    call_value_info: Vec<CallValueInfo>,
+    /// Whether the internal transaction is executed failed, true means the execution failed.
+    #[serde(default)]
+    rejected: Option<bool>,
+    /// At present, it is mainly used to save voting information
+    /// and record the voting SR and its number of votes in JSON format
+    #[serde(default)]
+    extra: Option<String>,
+}
 
 /// Transaction info
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -217,7 +245,8 @@ pub struct TransactionInfo {
      including TRX burned for bandwidth/energy, memo fee,
      account activation fee, multi-signature fee and other fees
     */
-    pub fee: u64,
+    #[serde(default)]
+    pub fee: Option<u64>,
     /// The block number
     #[serde(rename = "blockNumber")]
     pub block_number: u64,

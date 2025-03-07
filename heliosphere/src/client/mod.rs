@@ -90,14 +90,16 @@ impl RpcClient {
         P: Serialize,
         R: DeserializeOwned,
     {
-        Ok(self
+        let res = self
             .client
             .post(format!("{}/{}", self.rpc_url, method))
             .json(payload)
             .send()
-            .await?
-            .json()
-            .await?)
+            .await?;
+
+        let json = res.json().await?;
+
+        Ok(json)
     }
 
     /// Send a GET request
@@ -424,6 +426,18 @@ impl RpcClient {
         self.api_post(
             "/wallet/gettransactioninfobyid",
             &serde_json::json!({ "value": tx_id }),
+        )
+        .await
+    }
+
+    /// Query the transaction fee, block height by block num
+    pub async fn get_tx_info_by_block_num(
+        &self,
+        block_num: u64,
+    ) -> Result<Vec<TransactionInfo>, crate::Error> {
+        self.api_post(
+            "/wallet/gettransactioninfobyblocknum",
+            &serde_json::json!({ "num": block_num }),
         )
         .await
     }

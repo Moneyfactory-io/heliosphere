@@ -64,7 +64,8 @@ pub struct RawTxData {
     pub data: Option<String>,
     pub contract: Vec<Contract>,
     pub expiration: u64,
-    pub timestamp: u64,
+    #[serde(default)]
+    pub timestamp: Option<u64>,
     #[serde(default)]
     pub fee_limit: u64,
     #[serde(with = "as_hex_buffer")]

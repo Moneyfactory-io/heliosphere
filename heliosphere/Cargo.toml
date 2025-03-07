@@ -11,8 +11,8 @@ categories = ["api-bindings"]
 repository = "https://github.com/alianse777/heliosphere"
 
 [dependencies]
-heliosphere-core = "0.3"
-heliosphere-signer = "0.3"
+heliosphere-core = { path = "../heliosphere-core" }
+heliosphere-signer = { path = "../heliosphere-signer"}
 hex = "0.4"
 reqwest = { version = "0.12", features = ["json"] }
 serde = { version = "1.0", features = ["derive"] }

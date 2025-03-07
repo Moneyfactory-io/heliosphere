@@ -15,7 +15,7 @@ default = ["std"]
 std = ["thiserror", "k256/std"]
 
 [dependencies]
-heliosphere-core = "0.3"
+heliosphere-core = { path = "../heliosphere-core" }
 k256 = { version = "0.13", default-features = false, features = [
     "arithmetic",
     "ecdsa",
