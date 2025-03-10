@@ -4,9 +4,16 @@ use futures::future::join_all;
 use heliosphere::RpcClient;
 use heliosphere_core::transaction::TransactionId;
 
-const API: &str = "https://api.trongrid.io";
+const API: &str = "https://api.shasta.trongrid.io";
 const TRANSACTION_ID: &str = "8d9fa8690be0cd307c56cc64606dcd404cc9d2fa1855b7a01ffc9eb57f27e7e7";
 static CLIENT: LazyLock<RpcClient> = LazyLock::new(|| RpcClient::new(API).unwrap());
+
+#[tokio::test]
+async fn test_eth_get_block() {
+    let block_number = CLIENT.eth_block_number().await.unwrap();
+
+    println!("block number: {}", block_number.result);
+}
 
 #[tokio::test]
 async fn test_get_transaction_info_by_block_num() {

@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, time::Duration};
+use std::{collections::BTreeMap, fmt::Debug, time::Duration};
 
 use heliosphere_core::{
     block::{Block, BlockBy, BlockHeader},
@@ -7,8 +7,11 @@ use heliosphere_core::{
 };
 use heliosphere_signer::signer::Signer;
 use reqwest::{Client, IntoUrl, Url};
+use rpc_types::{RpcPayload, RpcResponse};
 use serde::{de::DeserializeOwned, Serialize};
 
+// Rpc response types
+pub mod rpc_types;
 /// Reponse types
 pub mod types;
 pub use types::*;
@@ -92,7 +95,7 @@ impl RpcClient {
     {
         let res = self
             .client
-            .post(format!("{}/{}", self.rpc_url, method))
+            .post(self.rpc_url.join(method)?)
             .json(payload)
             .send()
             .await?;
@@ -102,6 +105,29 @@ impl RpcClient {
         Ok(json)
     }
 
+    /// Send a POST RPC Call with json-serializable payload
+    pub async fn rpc_call<P, R>(
+        &self,
+        method: &str,
+        payload: &P,
+    ) -> Result<RpcResponse<R>, crate::Error>
+    where
+        P: Serialize + Debug,
+        R: DeserializeOwned,
+    {
+        let payload = RpcPayload::init(method.to_string(), payload);
+
+        let req = self
+            .client
+            .post(self.rpc_url.join("jsonrpc")?)
+            .json(&payload);
+
+        let res = req.send().await?;
+
+        let json = res.json().await?;
+
+        Ok(json)
+    }
     /// Send a GET request
     pub async fn api_get<R>(&self, method: &str) -> Result<R, crate::Error>
     where
@@ -440,5 +466,11 @@ impl RpcClient {
             &serde_json::json!({ "num": block_num }),
         )
         .await
+    }
+
+    /// RPC Returns the number of the most recent block
+    pub async fn eth_block_number(&self) -> Result<RpcResponse<String>, crate::Error> {
+        self.rpc_call("eth_blockNumber", &serde_json::json!([]))
+            .await
     }
 }

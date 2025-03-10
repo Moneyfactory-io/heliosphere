@@ -4,6 +4,8 @@ pub enum Error {
     /// Invalid URL
     #[error("invalid url")]
     InvalidUrl,
+    #[error("fail url parse")]
+    UrlBuildFail(#[from] url::ParseError),
     /// RpcError wrapping reqwest::Error
     #[error("rpc error {0}")]
     RpcError(#[from] reqwest::Error),

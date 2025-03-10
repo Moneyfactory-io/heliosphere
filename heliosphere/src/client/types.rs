@@ -136,7 +136,6 @@ pub struct ChainParameter {
     /// parameter name
     pub key: String,
     /// parameter value
-    #[serde(default)]
     pub value: Option<i64>,
 }
 
@@ -152,39 +151,30 @@ pub struct ChainParametersResponse {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct AccountBalanceResponse {
     /// TRX balance
-    #[serde(default)]
     pub balance: Option<u64>,
 }
 
 /// Transaction execution result
-pub type TransactionResult = String;
+pub type TransactionResult = String; // TODO: Improve this type
 
 /// Transaction receipt, including transaction execution result and transaction fee details
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct ResourceReceipt {
     /// The amount of energy consumed in the caller's account
-    #[serde(default)]
     pub energy_usage: Option<u64>,
     /// The amount of TRX burned to pay for energy
-    #[serde(default)]
     pub energy_fee: Option<u64>,
     /// The amount of energy consumed in the contract deployer's account
-    #[serde(default)]
     pub origin_energy_usage: Option<u64>,
     /// The total amount of energy consumed by the transaction
-    #[serde(default)]
     pub energy_usage_total: Option<u64>,
     /// The amount of bandwidth consumed
-    #[serde(default)]
     pub net_usage: Option<u64>,
     /// The amount of TRX burned to pay for the bandwidth
-    #[serde(default)]
     pub net_fee: Option<u64>,
     /// Transaction execution result
-    #[serde(default)]
-    pub result: Option<TransactionResult>, // TODO: Fix type
+    pub result: Option<TransactionResult>,
     /// The amount of extra energy that needs to be paid for calling a few popular contracts
-    #[serde(default)]
     pub energy_penalty_total: Option<u64>,
 }
 
@@ -207,10 +197,10 @@ pub struct Log {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct CallValueInfo {
     /// The amount of TRX/TRC10 tokens transferred
-    #[serde(default, rename = "callValue")]
+    #[serde(rename = "callValue")]
     call_value: Option<u64>,
     /// TRC10 name or id of the transfer; when transferring TRX, this field is empty
-    #[serde(default, rename = "tokenId")]
+    #[serde(rename = "tokenId")]
     token_id: Option<String>,
 }
 
@@ -228,11 +218,9 @@ pub struct InternalTransaction {
     #[serde(rename = "callValueInfo")]
     call_value_info: Vec<CallValueInfo>,
     /// Whether the internal transaction is executed failed, true means the execution failed.
-    #[serde(default)]
     rejected: Option<bool>,
     /// At present, it is mainly used to save voting information
     /// and record the voting SR and its number of votes in JSON format
-    #[serde(default)]
     extra: Option<String>,
 }
 
@@ -245,7 +233,6 @@ pub struct TransactionInfo {
      including TRX burned for bandwidth/energy, memo fee,
      account activation fee, multi-signature fee and other fees
     */
-    #[serde(default)]
     pub fee: Option<u64>,
     /// The block number
     #[serde(rename = "blockNumber")]
@@ -257,51 +244,44 @@ pub struct TransactionInfo {
     #[serde(rename = "contractResult")]
     pub contract_result: Vec<String>,
     /// Contract address
-    #[serde(default)]
     pub contract_address: Option<Address>,
     /// Transaction receipt, including transaction execution result and transaction fee details
     pub receipt: ResourceReceipt,
     /// The log of events triggered during the smart contract call
-    #[serde(default)]
     pub logs: Option<Vec<Log>>,
     /// Execution results. If the execution is successful, the field will not be displayed
     /// in the returned value, if the execution fails, the field will be "FAILED"
-    #[serde(default)]
     pub result: Option<String>,
     /** When the transaction execution fails,
         the details of the failure will be returned through this field.
         Hex format, you can convert it to a string to get plaintext information.
     */
-    #[serde(default, rename = "resMessage")]
+    #[serde(rename = "resMessage")]
     pub res_message: Option<String>,
     /** For the withdrawal reward transaction、unfreeze transaction,
         they will withdraw the vote reward to account.
         The number of rewards withdrawn to the account is returned through this field
         and the unit is sun
     */
-    #[serde(default)]
     pub withdraw_amount: Option<u64>,
     /** In the Stake1.0 stage, for unstaking transactions,
         this field returns the amount of unstaked TRX,
         the unit is sun
     */
-    #[serde(default)]
     pub unfreeze_amount: Option<u64>,
     /// Internal transaction
-    #[serde(default)]
     pub internal_transactions: Option<Vec<InternalTransaction>>,
     /** In the Stake2.0 stage, for unstaking transaction and withdrawing unfrozen balance transaction,
         and cancelling all unstakes transaction,
         this field returns the amount of unfrozen TRX withdrawn to the account in this transaction,
         the unit is sun
     */
-    #[serde(default)]
     pub withdraw_expire_amount: Option<u64>,
     /** The amount of TRX re-staked to obtain various types of resources,
         in sun, that is, the amount of unstaked principal that has been canceled,
         the key is: "BANDWIDTH" or "ENERGY" or "TRON_POWER"
     */
     // TODO: Add mapping to enum
-    #[serde(default, rename = "cancel_unfreezeV2_amount")]
+    #[serde(rename = "cancel_unfreezeV2_amount")]
     pub cancel_unfreeze_v2_amount: Option<BTreeMap<String, u64>>,
 }
